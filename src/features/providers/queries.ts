@@ -5,13 +5,19 @@ import type { Category, PublicProfile } from "@/types/domain";
 export async function directory(query = "", category = "", city = "", page = 1): Promise<{ items: PublicProfile[]; total: number; unavailable: boolean }> {
   if (!backendConfigured()) return { items: [], total: 0, unavailable: true };
   const { data, error } = await publicClient().rpc("search_directory", { p_query: query, p_category: category, p_city: city, p_page: page });
-  if (error) return { items: [], total: 0, unavailable: true };
+  if (error) {
+    console.error("[directory] search_directory RPC failed", { code: error.code, message: error.message });
+    return { items: [], total: 0, unavailable: true };
+  }
   return { ...(data as { items: PublicProfile[]; total: number }), unavailable: false };
 }
 export async function categories(): Promise<Category[]> {
   if (!backendConfigured()) return [];
   const { data, error } = await publicClient().rpc("public_categories");
-  if (error) return [];
+  if (error) {
+    console.error("[directory] public_categories RPC failed", { code: error.code, message: error.message });
+    return [];
+  }
   return data as Category[];
 }
 export async function publicProfile(slug: string): Promise<PublicProfile | null> {

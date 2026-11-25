@@ -39,9 +39,10 @@ export async function POST(request:Request){
  const notice=error.code==='email_address_invalid'?'email':error.status===429?'rate_limit':error.code==='weak_password'?'password':error.code==='unexpected_failure'?'service':'error';
  return go('/cadastro?notice='+notice);
  }
- return go('/entrar?notice=sent');
+ return go('/confirmar-email');
  }
  if(mode!=='login')return go('/entrar?notice=error');
  const {error}=await client.auth.signInWithPassword({email:email.data,password:password.data});
+ if(error?.code==='email_not_confirmed')return go('/entrar?notice=confirm');
  return go(error?'/entrar?notice=error':'/dashboard');
 }

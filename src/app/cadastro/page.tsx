@@ -1,0 +1,5 @@
+import Link from "next/link";
+import { AuthForm } from "@/components/auth-form";
+import { backendConfigured } from "@/lib/env";
+export const metadata={title:'Faça parte do diretório'};
+export default async function Signup({searchParams}:{searchParams:Promise<Record<string,string|undefined>>}){const p=await searchParams;const configured=backendConfigured();return <div className="form-shell"><p className="eyebrow">Sua próxima conexão começa aqui</p><h1>Crie sua conta.</h1><p>Escolha como participar da comunidade. Perfis de prestadores passam pela avaliação da liderança antes da publicação.</p>{!configured&&<p className="notice">As inscrições estarão disponíveis quando a preparação do diretório estiver concluída.</p>}{p.notice&&<p className="notice error">Não foi possível concluir o cadastro. Verifique os dados e tente novamente.</p>}<AuthForm mode="signup" configured={configured}/><p style={{marginTop:20}}>Já tem conta? <Link href="/entrar">Entrar</Link></p><p className="fine"><Link href="/privacidade">Privacidade</Link> · <Link href="/termos">Termos de uso</Link></p></div>}

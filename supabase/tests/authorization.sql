@@ -1,0 +1,15 @@
+begin;
+create extension if not exists pgtap with schema extensions;
+set search_path=public,extensions;
+select plan(9);
+select ok((select bool_and(relrowsecurity) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r'),'RLS is enabled on application tables');
+select ok(not has_table_privilege('anon','public.quote_requests','SELECT'),'anonymous cannot read quotes');
+select ok(not has_table_privilege('authenticated','public.user_roles','INSERT'),'users cannot grant roles');
+select ok(not has_table_privilege('authenticated','public.provider_profiles','UPDATE'),'users cannot change publication status directly');
+select ok(not has_function_privilege('anon','public.create_quote(text,uuid,jsonb,uuid,text)','EXECUTE'),'public cannot bypass quote endpoint');
+select ok(not has_function_privilege('authenticated','public.finalize_upload(uuid,uuid,integer,text,text,boolean)','EXECUTE'),'users cannot bless uploaded files');
+select ok(has_function_privilege('anon','public.get_public_profile(text)','EXECUTE'),'public can request safe profile projection');
+select ok(not has_schema_privilege('authenticated','private','USAGE'),'private helpers are not directly accessible');
+select ok((select bool_and(not public) from storage.buckets where id in ('quarantine','validated')),'media buckets are private');
+select * from finish();
+rollback;

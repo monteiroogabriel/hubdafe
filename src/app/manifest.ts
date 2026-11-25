@@ -1,0 +1,2 @@
+import type { MetadataRoute } from "next";
+export default function manifest():MetadataRoute.Manifest{return {name:'HUB da Fé',short_name:'HUB da Fé',description:'Profissionais e empresas da comunidade HUB da Fé.',start_url:'/',scope:'/',display:'standalone',background_color:'#fbfcfa',theme_color:'#122f36',lang:'pt-BR',icons:[{src:'/icons/icon-192.png',sizes:'192x192',type:'image/png'},{src:'/icons/icon-512.png',sizes:'512x512',type:'image/png',purpose:'any'},{src:'/icons/maskable-512.png',sizes:'512x512',type:'image/png',purpose:'maskable'}]};}

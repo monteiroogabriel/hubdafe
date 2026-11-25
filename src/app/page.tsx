@@ -26,11 +26,11 @@ export default async function Home() {
               <button className="primary" type="submit">Buscar <ArrowRight size={17} aria-hidden="true" /></button>
             </form>
           </div>
-          <aside className="home-community" aria-label="Sobre o diretório">
+          <aside className="home-community" aria-label="Sobre a lista de profissionais">
             <div className="home-community-mark"><BrandMark size={80} /></div>
             <div>
-              <h2>Quem aparece no diretório?</h2>
-              <p><ShieldCheck size={18} aria-hidden="true" /> A liderança valida o vínculo dos profissionais antes de publicar os perfis.</p>
+              <h2>O que você encontra aqui?</h2>
+              <p><ShieldCheck size={18} aria-hidden="true" /> Uma lista de profissionais e empresas da comunidade que oferecem serviços. A liderança do HUB confirma o vínculo de cada pessoa antes de mostrar seu perfil.</p>
             </div>
           </aside>
         </div>

@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { AsYouType, getCountries, getCountryCallingCode, parsePhoneNumberFromString, type CountryCode } from "libphonenumber-js";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { AsYouType, getCountries, getCountryCallingCode, parsePhoneNumberFromString, type CountryCode } from "libphonenumber-js/max";
 
 const displayNames = new Intl.DisplayNames(["pt-BR"], { type: "region" });
 const countryOptions = getCountries()
@@ -17,6 +17,7 @@ function flag(code: string) {
 }
 
 export function PhoneInput() {
+  const inputRef = useRef<HTMLInputElement>(null);
   const [country, setCountry] = useState<CountryCode>("BR");
   const [value, setValue] = useState("");
 
@@ -25,6 +26,10 @@ export function PhoneInput() {
     return parsed?.isValid() ? parsed.number : "";
   }, [country, value]);
 
+  useEffect(() => {
+    inputRef.current?.setCustomValidity(value && !internationalNumber ? "Informe um telefone válido para o país selecionado." : "");
+  }, [value, internationalNumber]);
+
   return (
     <div className="field">
       <label htmlFor="signup-phone">Telefone</label>
@@ -32,10 +37,11 @@ export function PhoneInput() {
         <label className="sr-only" htmlFor="signup-phone-country">País do telefone</label>
         <select
           id="signup-phone-country"
+          name="phone_country"
           value={country}
           onChange={(event) => {
             setCountry(event.target.value as CountryCode);
-            setValue("");
+            setValue(current => new AsYouType(event.target.value as CountryCode).input(current.replace(/\D/g, "")));
           }}
           autoComplete="country"
         >
@@ -47,6 +53,8 @@ export function PhoneInput() {
         </select>
         <input
           id="signup-phone"
+          ref={inputRef}
+          name="phone"
           type="tel"
           value={value}
           onChange={(event) => setValue(new AsYouType(country).input(event.target.value))}
@@ -54,11 +62,8 @@ export function PhoneInput() {
           maxLength={30}
           autoComplete="tel-national"
           placeholder="Número de telefone"
-          aria-describedby="signup-phone-help"
         />
-        <input type="hidden" name="phone" value={internationalNumber} />
       </div>
-      <span className="fine" id="signup-phone-help">Escolha seu país e digite o telefone. O formato muda conforme o país escolhido.</span>
     </div>
   );
 }

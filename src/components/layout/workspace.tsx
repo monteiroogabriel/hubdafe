@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowUpRight, ClipboardList, FolderOpen, LayoutGrid, LogOut, ShieldCheck, Tags, UserRound, Users } from "lucide-react";
+import { ArrowUpRight, ClipboardList, FolderOpen, LayoutGrid, LogOut, ShieldCheck, Tags, UserCog, UserRound, Users } from "lucide-react";
 import { Brand } from "./brand";
 
 const memberLinks = [
@@ -17,6 +17,7 @@ const adminLinks = [
   { href: "/admin/categorias", title: "Categorias", icon: Tags },
   { href: "/admin/auditoria", title: "Auditoria", icon: FolderOpen },
   { href: "/admin/orcamentos", title: "Orçamentos", icon: ClipboardList },
+  { href: "/admin/administradores", title: "Administradores", mobileTitle: "Admins", icon: UserCog },
 ];
 
 export function Workspace({ children, admin = false, canAdmin = false, customer = false }: {
@@ -40,18 +41,21 @@ export function Workspace({ children, admin = false, canAdmin = false, customer 
           </form>
         </div>
       </header>
-      <nav className="workspace-nav" aria-label={admin ? "Navegação administrativa" : "Navegação do prestador"}>
+      <nav className={admin ? "workspace-nav workspace-nav-admin" : "workspace-nav"} aria-label={admin ? "Navegação administrativa" : "Navegação da conta"}>
         {(admin ? adminLinks : customer ? [
           { href: "/dashboard", title: "Explorar", icon: LayoutGrid },
           { href: "/profissionais", title: "Serviços", icon: Users },
           { href: "/dashboard/seguranca", title: "Minha conta", icon: ShieldCheck },
-        ] : memberLinks).map(({ href, title, icon: Icon }, index) => {
+        ] : memberLinks).map(({ href, title, icon: Icon, ...item }, index) => {
           const active = pathname === href || (index > 0 && pathname.startsWith(href + "/")) ||
             (admin && index === 0 && pathname.startsWith("/admin/perfis/"));
           return (
             <Link prefetch={true} href={href} key={href} aria-current={active ? "page" : undefined}>
               <Icon size={21} aria-hidden="true" />
-              <span>{title}</span>
+              {"mobileTitle" in item && typeof item.mobileTitle === "string" ? <>
+                <span className="workspace-nav-full">{title}</span>
+                <span className="workspace-nav-short" aria-hidden="true">{item.mobileTitle}</span>
+              </> : <span>{title}</span>}
             </Link>
           );
         })}

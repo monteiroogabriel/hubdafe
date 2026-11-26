@@ -11,7 +11,7 @@ async function rpc<T=unknown>(name:string,args:unknown[]=[]){const result=await 
 const input=(cat:string)=>({provider_type:'individual',display_name:'João Eletricista',short_description:'Instalações elétricas residenciais',full_description:'Atendimento profissional.',public_email:'joao@example.test',public_phone:'',public_whatsapp:'',website_url:'',country:'BR',region:'SP',city:'São Paulo',service_areas:[],documents:[],services:[{title:'Instalação elétrica',description:'Instalação segura de iluminação residencial.',category_id:cat,is_active:true,photos:[]}]});
 beforeAll(async()=>{
  await db.exec(`create role anon; create role authenticated; create role service_role bypassrls; create schema auth; create schema storage;
- create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz,created_at timestamptz default now());
+ create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz,raw_user_meta_data jsonb,created_at timestamptz default now());
  create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);
  create function auth.jwt() returns jsonb language sql stable as $$ select coalesce(nullif(current_setting('request.jwt.claims',true),''),'{}')::jsonb $$;
  create function auth.uid() returns uuid language sql stable as $$ select (auth.jwt()->>'sub')::uuid $$;
@@ -45,4 +45,34 @@ describe('Database authorization and publication',()=>{
  it('revoking publication consent removes the profile',async()=>{await identity(admin,'authenticated','aal2');await rpc('set_suspension',[provider,false,'Verificação concluída']);await identity(a);await rpc('revoke_publication_consent');await expect(rpc('set_publication',[true])).rejects.toThrow('PUBLICATION_NOT_ALLOWED');await identity(null,'anon');expect(await rpc('get_public_profile',[slug])).toBeNull();});
  it('disabled accounts cannot use an otherwise valid identity',async()=>{await identity(a);await rpc('request_account_deletion');expect(await rpc('account_enabled')).toBe(false);expect((await db.query('select * from public.quote_requests')).rows).toHaveLength(0);await expect(rpc('start_draft')).rejects.toThrow('FORBIDDEN');});
  it('retention removes personal data without changing live requests',async()=>{await db.exec('reset role');await db.exec("update public.quote_requests set closed_at=now()-interval '181 days' where status='closed'");await identity(null,'service_role');await rpc('prepare_cleanup');await db.exec('reset role');expect((await db.query('select * from public.quote_requests')).rows).toHaveLength(0);});
+ it("grants administrator access only from an MFA session and audits a single grant", async () => {
+  await db.exec("reset role");
+  const target = "10000000-0000-4000-8000-000000000004";
+  const unconfirmed = "10000000-0000-4000-8000-000000000005";
+  await db.query("insert into auth.users(id,email,email_confirmed_at) values ($1,'candidate@example.test',now()),($2,'pending@example.test',null)", [target, unconfirmed]);
+  await db.query("update auth.users set email='disabled@example.test' where id=$1",[a]);
+
+  await identity(null,"anon");
+  await expect(rpc("grant_administrator",["candidate@example.test"])).rejects.toThrow(/permission denied/);
+  await identity(b,"authenticated","aal2");
+  await expect(rpc("grant_administrator",["candidate@example.test"])).rejects.toThrow("FORBIDDEN");
+  await identity(admin);
+  await expect(rpc("grant_administrator",["candidate@example.test"])).rejects.toThrow("FORBIDDEN");
+  await identity(admin,"authenticated","aal2");
+  for (const email of ["missing@example.test","pending@example.test","disabled@example.test"]) {
+   expect(await rpc("grant_administrator",[email])).toBe("unavailable");
+  }
+  expect(await rpc("grant_administrator",[" CANDIDATE@example.test "])).toBe("granted");
+  expect(await rpc("grant_administrator",["candidate@example.test"])).toBe("already_administrator");
+  const audit = await db.query("select actor_user_id,entity_id from public.admin_audit_logs where action='user_roles_granted' and actor_user_id=$1 and entity_id=$2",[admin,target]);
+  expect(audit.rows).toEqual([{actor_user_id:admin,entity_id:target}]);
+
+  await identity(target);
+  expect(await rpc("is_administrator")).toBe(false);
+  expect((await db.query("select granted_by from public.user_roles where role='administrator'")).rows).toEqual([{granted_by:admin}]);
+  await identity(target,"authenticated","aal2");
+  expect(await rpc("is_administrator")).toBe(true);
+  await expect(rpc("support_quote",["20000000-0000-4000-8000-000000000001","Verificar capacidade separada"])).rejects.toThrow("FORBIDDEN");
+ });
+
 });

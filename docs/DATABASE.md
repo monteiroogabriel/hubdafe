@@ -23,10 +23,10 @@ provider_memberships, moderation_decisions e admin_audit_logs contêm informaç�
 1. Criar a conta pelo fluxo normal e confirmar seu e-mail.
 2. Na área Conta e segurança, cadastrar TOTP e verificar o código.
 3. Conferir a identidade com a liderança por canal independente.
-4. No SQL Editor administrativo do projeto correto, executar uma transação chamando `private.provision_administrator` com o UUID conferido e `false` para suporte de orçamentos. A função verifica e-mail confirmado e fator TOTP validado; grants não estão acessíveis pela aplicação.
+4. No SQL Editor administrativo do projeto correto, executar uma transação chamando `private.provision_administrator` com o UUID conferido e `false` para suporte de orçamentos. A função privada verifica e-mail confirmado e fator TOTP validado.
 5. O administrador entra com MFA para usar o painel. Para suporte de orçamentos, o responsável pelo banco concede explicitamente essa capacidade usando o segundo parâmetro `true` após autorização organizacional.
 
-Não conceder função administrativa a partir de e-mail enviado pelo navegador. Nenhum endpoint público aceita papel ou `is_admin`. Alterações de papéis/capacidades possuem triggers de auditoria.
+Depois do primeiro acesso, a tela **Administração → Administradores** concede o papel a uma conta ativa com e-mail confirmado. A função `public.grant_administrator` exige papel administrativo e sessão com MFA. O destinatário precisa verificar o autenticador para entrar na administração. O cadastro público nunca concede o papel administrativo. Alterações de papéis e capacidades são registradas em auditoria.
 
 ## Validação
 

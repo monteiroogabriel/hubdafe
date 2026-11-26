@@ -15,7 +15,12 @@ export const requireUser = cache(async function requireUser() {
 export async function requireAdmin() {
   const result = await requireUser();
   const { data } = await result.client.rpc("is_administrator");
-  if (!data) redirect("/dashboard?notice=admin-denied");
+  if (!data) {
+    const { data: role } = await result.client.from("user_roles")
+      .select("role").eq("user_id", result.user.id).eq("role", "administrator").maybeSingle();
+    if (role) redirect("/dashboard/seguranca?notice=admin-mfa");
+    redirect("/dashboard?notice=admin-denied");
+  }
   return result;
 }
 

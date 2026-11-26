@@ -8,6 +8,7 @@ export const profileSchema = z.object({
   professional_name: z.string().max(100).default(""), business_name: z.string().max(100).default(""),
   short_description: z.string().trim().min(10).max(240), full_description: z.string().max(5000).default(""),
   public_email: email, public_phone: phone, public_whatsapp: phone, website_url: website,
+  instagram_username: z.string().trim().transform(v => v.replace(/^@/, "")).pipe(z.string().regex(/^$|^[A-Za-z0-9._]{1,30}$/, "Informe apenas o usuário do Instagram, sem link.")).default(""),
   country: z.string().regex(/^[A-Z]{2}$/), region: z.string().max(100), city: z.string().max(100),
   service_areas: z.array(z.object({ country: z.string().regex(/^[A-Z]{2}$/), region: z.string().max(100), city: z.string().min(1).max(100) })).max(30),
   services: z.array(z.object({

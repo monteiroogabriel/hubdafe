@@ -2,7 +2,7 @@ export type Category = { id?: string; slug: string; name: string; description: s
 export type PublicProfile = {
  slug: string; display_name: string; provider_type: "individual" | "business";
  professional_name: string; business_name: string; short_description: string; full_description: string;
- public_email: string; public_phone: string; public_whatsapp: string; website_url: string;
+ public_email: string; public_phone: string; public_whatsapp: string; website_url: string; instagram_username?: string;
  city: string; region: string; country: string; approved_at: string;
  service_areas: { city: string; region: string; country: string }[];
  documents: { kind: string; key: string }[];

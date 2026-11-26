@@ -4,9 +4,10 @@ import { requireProvider } from "@/lib/security/auth";
 import { profileSchema } from "@/lib/validation/schemas";
 import { safeError } from "@/lib/security/http";
 import { z } from "zod";
+import { profileValidationMessages } from "@/lib/validation/profile-errors";
 export async function saveProfile(id:string,version:number,input:unknown){
  const {client}=await requireProvider();const data=profileSchema.safeParse(input);
- if(!z.uuid().safeParse(id).success||!data.success)return {error:data.success?'Perfil inválido.':data.error.issues.map(i=>`${i.path.join('.')}: ${i.message}`).join(' · ')};
+ if(!z.uuid().safeParse(id).success||!data.success)return {error:data.success?'Perfil inválido.':'Confira os campos indicados abaixo.' ,fieldErrors:data.success?[]:profileValidationMessages(data.error.issues)};
  const {data:nextVersion,error}=await client.rpc('save_revision',{p_revision:id,p_version:version,p_data:data.data});
  if(error)return {error:safeError(error)};revalidatePath('/dashboard/perfil');return {success:true,version:Number(nextVersion)};
 }

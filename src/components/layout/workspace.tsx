@@ -33,8 +33,8 @@ export function Workspace({ children, admin = false, canAdmin = false, customer 
       <header className="workspace-header">
         <Brand href="/dashboard" />
         <div className="workspace-header-actions">
-          {admin ? <Link className="workspace-switch" href="/dashboard">Meu painel <ArrowUpRight size={16} /></Link> :
-            canAdmin && <Link className="workspace-switch workspace-switch-admin" href="/admin"><ShieldCheck size={17} aria-hidden="true" /><span>Administração</span><ArrowUpRight size={16} aria-hidden="true" /></Link>}
+          {admin ? <Link className="workspace-switch" href="/dashboard">Área da conta <ArrowUpRight size={16} /></Link> :
+            canAdmin && <Link className="workspace-switch" href="/admin">Administração <ArrowUpRight size={16} /></Link>}
           <form action="/auth/operacao" method="post">
             <input type="hidden" name="mode" value="logout" />
             <button className="workspace-logout" aria-label="Sair da conta"><LogOut size={18} aria-hidden="true" /><span>Sair</span></button>

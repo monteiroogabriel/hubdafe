@@ -1,17 +1,17 @@
 # Configuração e implantação
 
-O projeto Supabase hospedado já existe e as quatro migrações foram aplicadas pelo SQL Editor. Verificação em 25/11/2026: 17 tabelas da aplicação, RLS habilitada em todas, gatilho de provisionamento de conta, dois buckets privados e função de busca presentes. O histórico de migração do CLI ainda não existe. Vercel e deploy ainda não foram configurados. A escolha permanece Vercel + Supabase em São Paulo. Não usar Sites/Cloudflare Workers para hospedar este runtime Node sem uma decisão arquitetural separada.
+O projeto Supabase hospedado já existe. As migrações anteriores foram aplicadas pelo SQL Editor; a migração `202611260003_optional_admin_mfa.sql` deve ser aplicada antes do deploy desta alteração. Verificação em 25/11/2026: 17 tabelas da aplicação, RLS habilitada em todas, gatilho de provisionamento de conta, dois buckets privados e função de busca presentes. O histórico de migração do CLI ainda não existe. Vercel e deploy ainda não foram configurados. A escolha permanece Vercel + Supabase em São Paulo. Não usar Sites/Cloudflare Workers para hospedar este runtime Node sem uma decisão arquitetural separada.
 
 ## Serviços
 
 1. Criar projetos Supabase de homologação e produção, com banco PostgreSQL 17. Confirmar plano, região e orçamento com a organização.
 2. Aplicar migrações versionadas primeiro em homologação. Auditar grants/RLS, funções expostas e buckets privados.
-3. Configurar Auth: confirmação de e-mail, senha mínima 12, expiração JWT 900s, TOTP habilitado, redirects exatos, sem curingas em produção.
+3. Configurar Auth: confirmação de e-mail, senha mínima 12, expiração JWT 900s, TOTP opcional, redirects exatos, sem curingas em produção.
 4. Configurar SMTP Resend com domínio verificado, SPF, DKIM e DMARC; testar confirmação, recuperação e alteração de e-mail.
 5. Manter CAPTCHA desativado no Supabase Auth enquanto essa proteção estiver fora do escopo. Confirmar limites nativos de Auth, confirmação de e-mail e redirects permitidos.
 6. Configurar variáveis `.env.example` na Vercel e separar previews/homologação/produção. `SUPABASE_SECRET_KEY`, `ABUSE_HMAC_SECRET` e `CRON_SECRET` nunca recebem prefixo NEXT_PUBLIC.
 7. Selecionar Node 24, instalar com pnpm e build `pnpm build`. Configurar domínio HTTPS e região de função próxima ao banco. Habilitar HSTS após validar o domínio e seus subdomínios.
-8. Provisionar o primeiro administrador conforme DATABASE.md; validar MFA na UI e na Data API.
+8. Provisionar o primeiro administrador conforme DATABASE.md; confirmar acesso administrativo com MFA desligado e deixar o autenticador disponível apenas como opção em Minha conta.
 9. Configurar Sentry DSN, ambiente e release. O código envia apenas eventos sanitizados, sem replay, request, user, breadcrumbs ou parâmetros. Configurar alertas e retenção de 30 dias na conta Sentry; validar recebimento em homologação.
 10. Agendar POST diário para `/api/rotinas/limpeza` com `Authorization: Bearer CRON_SECRET` por scheduler protegido. Não expor segredo na URL. A rotina retorna 503 se uma remoção falhar; configurar alerta e repetição. O scheduler não foi provisionado.
 
@@ -33,4 +33,4 @@ Restaurar em projeto isolado, aplicar migrações compatíveis, restaurar objeto
 
 ## Smoke tests
 
-Cadastro real e confirmação → perfil com dois serviços e arquivos → revisão por outro administrador com MFA → busca anônima → orçamento real sujeito a honeypot e limites → leitura somente pelo destinatário → suspensão e bloqueio de novas leituras de arquivo → logout sem dados em caches → exclusão/limpeza em ambiente descartável.
+Cadastro real e confirmação → perfil com dois serviços e arquivos → revisão por outro administrador sem MFA obrigatório → busca anônima → orçamento real sujeito a honeypot e limites → leitura somente pelo destinatário → suspensão e bloqueio de novas leituras de arquivo → logout sem dados em caches → exclusão/limpeza em ambiente descartável.

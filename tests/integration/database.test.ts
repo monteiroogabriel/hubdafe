@@ -31,7 +31,7 @@ describe('Database authorization and publication',()=>{
  it('signup grants only provider and owner can create a complete draft',async()=>{await identity(a);const roles=await db.query<{role:string}>('select role from public.user_roles');expect(roles.rows.map(r=>r.role)).toEqual(['provider']);revision=await rpc<string>('start_draft');const p=await db.query<{id:string;slug:string}>('select id,slug from public.provider_profiles');provider=p.rows[0].id;slug=p.rows[0].slug;expect(await rpc('save_revision',[revision,1,input(category)])).toBe(2);await expect(db.query("update public.provider_profiles set status='approved'")).rejects.toThrow(/permission denied/);await expect(db.query("insert into public.user_roles values($1,'administrator',null,now())",[a])).rejects.toThrow(/permission denied/);});
  it('another provider cannot read or mutate the draft',async()=>{await identity(b);expect((await db.query('select * from public.provider_revisions')).rows).toHaveLength(0);await expect(rpc('save_revision',[revision,2,input(category)])).rejects.toThrow('FORBIDDEN');await expect(rpc('submit_revision',[revision,true])).rejects.toThrow('FORBIDDEN');});
  it('pending content stays private and submission freezes editing',async()=>{await identity(a);await rpc('submit_revision',[revision,true]);await expect(rpc('save_revision',[revision,3,input(category)])).rejects.toThrow('FORBIDDEN');await identity(null,'anon');expect(await rpc('get_public_profile',[slug])).toBeNull();});
- it('admin without MFA cannot approve',async()=>{await identity(admin);await expect(rpc('decide_revision',[revision,true,true,'',''])).rejects.toThrow('FORBIDDEN');});
+ it('administrator role is recognized without MFA',async()=>{await identity(admin);expect(await rpc('is_administrator')).toBe(true);});
  it('approval publishes only explicitly public data',async()=>{await identity(admin,'authenticated','aal2');await rpc('decide_revision',[revision,true,true,'','internal secret']);await identity(null,'anon');const published=await rpc<Record<string,unknown>>('get_public_profile',[slug]);expect(published.display_name).toBe('João Eletricista');expect(published).not.toHaveProperty('owner_user_id');expect(published).not.toHaveProperty('id');expect(JSON.stringify(published)).not.toContain('internal secret');});
  it('editing and rejecting a new revision preserve old publication',async()=>{await identity(a);revision=await rpc<string>('start_draft');await rpc('save_revision',[revision,1,{...input(category),display_name:'Nome ainda não aprovado'}]);await rpc('submit_revision',[revision,true]);await identity(null,'anon');expect((await rpc<{display_name:string}>('get_public_profile',[slug])).display_name).toBe('João Eletricista');await identity(admin,'authenticated','aal2');await rpc('decide_revision',[revision,false,false,'Corrija a descrição','private note']);await identity(a);expect((await db.query('select * from public.moderation_decisions')).rows).toHaveLength(0);await identity(null,'anon');expect((await rpc<{display_name:string}>('get_public_profile',[slug])).display_name).toBe('João Eletricista');});
  it('search handles accents, case and a category filter',async()=>{await identity(null,'anon');const result=await rpc<{total:number;items:unknown[]}>('search_directory',['ELETRICA','eletrica','sao paulo',1]);expect(result.total).toBe(1);expect(result.items).toHaveLength(1);expect((await rpc<{total:number}>('search_directory',['','missing','',1])).total).toBe(0);});
@@ -57,8 +57,7 @@ describe('Database authorization and publication',()=>{
   await identity(b,"authenticated","aal2");
   await expect(rpc("grant_administrator",["candidate@example.test"])).rejects.toThrow("FORBIDDEN");
   await identity(admin);
-  await expect(rpc("grant_administrator",["candidate@example.test"])).rejects.toThrow("FORBIDDEN");
-  await identity(admin,"authenticated","aal2");
+  expect(await rpc("is_administrator")).toBe(true);
   for (const email of ["missing@example.test","disabled@example.test"]) {
    expect(await rpc("grant_administrator",[email])).toBe("unavailable");
   }
@@ -68,15 +67,15 @@ describe('Database authorization and publication',()=>{
    expect(await rpc("can_resend_administrator_confirmation",[email])).toBe(false);
   }
   await identity(admin);
-  await expect(rpc("can_resend_administrator_confirmation",["pending@example.test"])).rejects.toThrow("FORBIDDEN");
-  await identity(admin,"authenticated","aal2");
+  expect(await rpc("can_resend_administrator_confirmation",["pending@example.test"])).toBe(true);
   expect(await rpc("grant_administrator",[" CANDIDATE@example.test "])).toBe("granted");
+  await identity(admin,"authenticated","aal2");
   expect(await rpc("grant_administrator",["candidate@example.test"])).toBe("already_administrator");
   const audit = await db.query("select actor_user_id,entity_id from public.admin_audit_logs where action='user_roles_granted' and actor_user_id=$1 and entity_id=$2",[admin,target]);
   expect(audit.rows).toEqual([{actor_user_id:admin,entity_id:target}]);
 
   await identity(target);
-  expect(await rpc("is_administrator")).toBe(false);
+  expect(await rpc("is_administrator")).toBe(true);
   expect((await db.query("select granted_by from public.user_roles where role='administrator'")).rows).toEqual([{granted_by:admin}]);
   await identity(target,"authenticated","aal2");
   expect(await rpc("is_administrator")).toBe(true);
@@ -89,7 +88,7 @@ describe('Database authorization and publication',()=>{
   await db.query("insert into auth.users(id,email,email_confirmed_at) values ($1,'bootstrap@example.test',now())", [target]);
   await db.query("select private.provision_administrator($1,false)", [target]);
   await identity(target);
-  expect(await rpc("is_administrator")).toBe(false);
+  expect(await rpc("is_administrator")).toBe(true);
   expect((await db.query("select role from public.user_roles where role='administrator'")).rows).toEqual([{role:"administrator"}]);
  });
 

@@ -23,9 +23,9 @@ provider_memberships, moderation_decisions e admin_audit_logs contêm informaç�
 1. Criar a conta pelo fluxo normal e confirmar seu e-mail.
 2. Conferir a identidade com a liderança por canal independente.
 3. No SQL Editor administrativo do projeto correto, executar uma transação chamando `private.provision_administrator` com o UUID conferido e `false` para suporte de orçamentos. A função privada verifica e-mail confirmado e conta ativa.
-4. Em **Minha conta**, o administrador configura o autenticador com a chave exibida e verifica o código para usar o painel. Para suporte de orçamentos, o responsável pelo banco concede explicitamente essa capacidade usando o segundo parâmetro `true` após autorização organizacional.
+4. O autenticador em **Minha conta** é opcional e não condiciona o acesso administrativo. Para suporte de orçamentos, o responsável pelo banco concede explicitamente essa capacidade usando o segundo parâmetro `true` após autorização organizacional.
 
-Depois do primeiro acesso, a tela **Administração → Administradores** concede o papel a uma conta ativa com e-mail confirmado. A função `public.grant_administrator` exige papel administrativo e sessão com MFA. O destinatário precisa verificar o autenticador para entrar na administração. O cadastro público nunca concede o papel administrativo. Alterações de papéis e capacidades são registradas em auditoria.
+Depois do primeiro acesso, a tela **Administração → Administradores** concede o papel a uma conta ativa com e-mail confirmado. A função `public.grant_administrator` exige uma sessão de administrador. O autenticador pode ser configurado voluntariamente em Minha conta. O cadastro público nunca concede o papel administrativo. Alterações de papéis e capacidades são registradas em auditoria.
 
 ## Validação
 

@@ -12,7 +12,7 @@
 
 Fixtures criam roles anon/authenticated/service_role e funções auth.uid/auth.jwt, além de tabelas mínimas do serviço. As migrações da aplicação são aplicadas sem reimplementação das regras. As consultas realmente executam PostgreSQL/RLS. Os valores de identidade são selecionados pelo teste; não há autenticação JWT real nesse nível.
 
-Cobertura: leitura privada anônima, escalada de papel, edição de outro prestador, imutabilidade pendente, MFA administrativo, publicação sem notas/IDs privados, preservação da versão aprovada, busca com acentos, atualização obsoleta, consentimento explícito, automoderação, quota/propriedade de upload, orçamentos privados e idempotentes, suporte restrito, suspensão, limites, revogação, bloqueio da conta e retenção.
+Cobertura: leitura privada anônima, escalada de papel, edição de outro prestador, imutabilidade pendente, acesso administrativo sem MFA obrigatório, publicação sem notas/IDs privados, preservação da versão aprovada, busca com acentos, atualização obsoleta, consentimento explícito, automoderação, quota/propriedade de upload, orçamentos privados e idempotentes, suporte restrito, suspensão, limites, revogação, bloqueio da conta e retenção.
 
 ## Arquivos
 
@@ -21,7 +21,7 @@ Teste com imagem gerada verifica formato WebP e ausência de EXIF. PDFs inertes 
 ## Ainda obrigatórios na integração completa
 
 - E-mail de confirmação/recuperação e cookies SSR após login/logout em dois navegadores.
-- MFA real, recuperação operacional do administrador e bootstrap seguro.
+- MFA opcional real, recuperação operacional do administrador e bootstrap seguro.
 - Upload assinado Supabase, MIME adulterado, URLs já utilizadas e suspensão após publicação de mídia.
 - Limites nativos de Auth do Supabase, IP confiável Vercel e concorrência dos limites de orçamento entre instâncias.
 - Cenários A–G completos do PRD com pessoas/credenciais exclusivamente de teste.

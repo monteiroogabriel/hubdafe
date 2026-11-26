@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import { grantAdministrator } from "@/features/moderation/actions";
 
 const notices: Record<string, string> = {
-  granted: "Acesso concedido. A pessoa poderá configurar o autenticador no celular quando for abrir a administração.",
+  granted: "Acesso concedido. A pessoa já pode entrar na administração; configurar autenticador em Minha conta é opcional.",
   already_administrator: "Esta conta já tem acesso administrativo.",
   unavailable: "Nenhuma conta ativa foi encontrada para esse endereço.",
   confirmation_required: "A conta existe, mas ainda precisa confirmar o e-mail. Depois da confirmação, conceda o acesso novamente.",

@@ -5,7 +5,7 @@
 - RLS em todas as tabelas da aplicação; anon não consulta tabelas privadas.
 - Sem INSERT/UPDATE/DELETE direto para authenticated, inclusive administradores.
 - Projeções públicas explícitas. SECURlTY DEFINER é restrito a funções com autorização e search_path vazio; execução por PUBLIC revogada.
-- Papéis no banco, contas habilitadas e e-mail confirmado. Administração exige aal2 e bloqueia automoderação.
+- Papéis no banco, contas habilitadas e e-mail confirmado. MFA é opcional, e a administração bloqueia automoderação.
 - Orçamentos só são lidos pelo destinatário ou por função de suporte que exige capacidade, justificativa e auditoria.
 - Sessão em cookies HttpOnly/Secure/SameSite. Redirect allowlist, Origin em endpoints mutáveis e proteção nativa das Server Actions.
 - Chaves técnicas server-only; sem acesso privilegiado genérico para a interface.

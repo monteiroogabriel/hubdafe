@@ -90,6 +90,9 @@
 .workspace-header .brand-mark { max-width: 34px; max-height: 34px; }
 .workspace-header-actions { display: flex; align-items: center; gap: 4px; }
 .workspace-switch, .workspace-logout { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 8px; font-size: .83rem; font-weight: 650; }
+.workspace-switch.workspace-switch-admin { min-height: 42px; padding: 0 14px; border: 1px solid #122f36; border-radius: 9px; background: var(--navy); color: #fff; box-shadow: 0 3px 10px #122f3620; }
+.workspace-switch.workspace-switch-admin:hover { background: #22484e; box-shadow: 0 5px 14px #122f3630; text-decoration: none; }
+.workspace-switch-admin:focus-visible { outline-offset: 3px; }
 .workspace-logout { min-width: 44px; border-radius: 8px; }
 .workspace-logout:hover { background: var(--surface-muted); }
 .workspace-logout span { display: none; }

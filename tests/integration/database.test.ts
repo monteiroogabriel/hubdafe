@@ -59,9 +59,17 @@ describe('Database authorization and publication',()=>{
   await identity(admin);
   await expect(rpc("grant_administrator",["candidate@example.test"])).rejects.toThrow("FORBIDDEN");
   await identity(admin,"authenticated","aal2");
-  for (const email of ["missing@example.test","pending@example.test","disabled@example.test"]) {
+  for (const email of ["missing@example.test","disabled@example.test"]) {
    expect(await rpc("grant_administrator",[email])).toBe("unavailable");
   }
+  expect(await rpc("grant_administrator",["pending@example.test"])).toBe("confirmation_required");
+  expect(await rpc("can_resend_administrator_confirmation",["pending@example.test"])).toBe(true);
+  for (const email of ["candidate@example.test","missing@example.test","disabled@example.test"]) {
+   expect(await rpc("can_resend_administrator_confirmation",[email])).toBe(false);
+  }
+  await identity(admin);
+  await expect(rpc("can_resend_administrator_confirmation",["pending@example.test"])).rejects.toThrow("FORBIDDEN");
+  await identity(admin,"authenticated","aal2");
   expect(await rpc("grant_administrator",[" CANDIDATE@example.test "])).toBe("granted");
   expect(await rpc("grant_administrator",["candidate@example.test"])).toBe("already_administrator");
   const audit = await db.query("select actor_user_id,entity_id from public.admin_audit_logs where action='user_roles_granted' and actor_user_id=$1 and entity_id=$2",[admin,target]);
@@ -73,6 +81,16 @@ describe('Database authorization and publication',()=>{
   await identity(target,"authenticated","aal2");
   expect(await rpc("is_administrator")).toBe(true);
   await expect(rpc("support_quote",["20000000-0000-4000-8000-000000000001","Verificar capacidade separada"])).rejects.toThrow("FORBIDDEN");
+ });
+
+ it("can provision the first administrator before authenticator enrollment", async () => {
+  await db.exec("reset role");
+  const target = "10000000-0000-4000-8000-000000000006";
+  await db.query("insert into auth.users(id,email,email_confirmed_at) values ($1,'bootstrap@example.test',now())", [target]);
+  await db.query("select private.provision_administrator($1,false)", [target]);
+  await identity(target);
+  expect(await rpc("is_administrator")).toBe(false);
+  expect((await db.query("select role from public.user_roles where role='administrator'")).rows).toEqual([{role:"administrator"}]);
  });
 
 });

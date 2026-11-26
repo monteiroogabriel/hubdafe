@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { parsePhoneNumberFromString } from "libphonenumber-js";
-export const phone = z.string().trim().refine(v => v === "" || (v.startsWith("+") && !!parsePhoneNumberFromString(v)?.isValid()), "Use um número internacional válido, com + e código do país.").transform(v => v ? parsePhoneNumberFromString(v)!.number : "");
+const parsePhone = (value: string) => value.startsWith("+") ? parsePhoneNumberFromString(value) : parsePhoneNumberFromString(value, "BR");
+export const phone = z.string().trim().refine(v => v === "" || !!parsePhone(v)?.isValid(), "Informe um número de telefone válido.").transform(v => v ? parsePhone(v)!.number : "");
 const email = z.union([z.email(), z.literal("")]);
 const website = z.union([z.url().refine(v => { const u = new URL(v); return u.protocol === "https:" && !u.username && !u.password; }, "Use um endereço HTTPS sem credenciais."), z.literal("")]);
 export const profileSchema = z.object({
@@ -26,6 +27,6 @@ export const quoteSchema = z.object({
   company_website: z.literal("").default(""),
 }).superRefine((v, ctx) => {
   if (v.contact_method === "email" && !v.email) ctx.addIssue({ code: "custom", path: ["email"], message: "Informe seu e-mail." });
-  if (v.contact_method !== "email" && !v.phone) ctx.addIssue({ code: "custom", path: ["phone"], message: "Informe seu telefone com código do país." });
+  if (v.contact_method !== "email" && !v.phone) ctx.addIssue({ code: "custom", path: ["phone"], message: "Informe seu telefone." });
 });
 export type ProfileInput = z.input<typeof profileSchema>;

@@ -1,10 +1,12 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { UserRound, X } from "lucide-react";
 
-export function ProfileDialog({ children }: { children: React.ReactNode }) {
+export function ProfileDialog({ children, autoOpen=false }: { children: React.ReactNode; autoOpen?: boolean }) {
   const dialog = useRef<HTMLDialogElement>(null);
+
+  useEffect(()=>{if(autoOpen)dialog.current?.showModal();},[autoOpen]);
 
   return (
     <>
@@ -12,7 +14,7 @@ export function ProfileDialog({ children }: { children: React.ReactNode }) {
         <span className="tile-icon"><UserRound aria-hidden="true" /></span>
         <h2>Apresente seus serviços</h2>
         <p>Preencha suas informações e envie para a liderança avaliar. Você pode fechar a janela e continuar de onde parou enquanto estiver nesta página.</p>
-        <button className="primary" onClick={() => dialog.current?.showModal()}>Abrir meu formulário</button>
+        <button className="primary" onClick={() => dialog.current?.showModal()}>Editar perfil</button>
       </section>
       <dialog className="profile-dialog" ref={dialog} aria-labelledby="profile-dialog-title">
         <div className="profile-dialog-header">

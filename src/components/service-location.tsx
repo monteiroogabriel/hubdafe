@@ -3,7 +3,8 @@
 import { useEffect, useId, useState } from "react";
 import { brazilStates, normalizeState } from "@/lib/location/brazil";
 
-export function ServiceLocation({ region, cities: selectedCities, onChange, onPendingChange }: {
+export function ServiceLocation({ region, cities: selectedCities, onChange, onPendingChange, errors = {} }: {
+  errors?: Record<string,string>;
   region: string;
   cities: string[];
   onChange: (region: string, cities: string[]) => void;
@@ -51,12 +52,12 @@ export function ServiceLocation({ region, cities: selectedCities, onChange, onPe
   }, [state, key]);
 
   return <div className="form-grid">
-    <label className="field">Estado<select required value={state} onChange={event => { onChange(event.target.value, []); setDraft(""); onPendingChange(false); setAdding(true); setMessage(""); }}>
+    <label className="field">Estado<select name="region" aria-invalid={!!errors.region} aria-describedby={errors.region?"error-region":undefined} required value={state} onChange={event => { onChange(event.target.value, []); setDraft(""); onPendingChange(false); setAdding(true); setMessage(""); }}>
       <option value="">Selecione seu estado</option>
       {brazilStates.map(([code, name]) => <option key={code} value={code}>{name} ({code})</option>)}
-    </select></label>
+    </select>{errors.region&&<span className="field-error" id="error-region" role="alert">{errors.region}</span>}</label>
     {state && <div>
-      <span className="field">Cidades onde atende</span>
+      <span className="field">Cidades onde atende</span><div tabIndex={-1} aria-invalid={!!errors.city} aria-describedby={errors.city?"error-city":undefined}>{errors.city&&<span className="field-error" id="error-city" role="alert">{errors.city}</span>}</div>
       {!!selectedCities.length && <ul aria-label="Cidades adicionadas" style={{listStyle:"none",padding:0,margin:"0 0 14px",display:"grid",gap:8}}>
         {selectedCities.map((city,index)=><li key={`${city.toLocaleLowerCase("pt-BR")}-${index}`} className="pill" style={{justifyContent:"space-between",padding:"8px 12px"}}>
           <span>{city} · {state}</span>

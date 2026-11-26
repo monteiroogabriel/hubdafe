@@ -24,3 +24,12 @@ export function profileValidationMessages(issues: z.core.$ZodIssue[]): string[] 
     return `${label}: confira o preenchimento antes de salvar.`;
   }))];
 }
+
+export function profileFieldErrors(issues: z.core.$ZodIssue[]): Record<string,string> {
+ const errors: Record<string,string> = {};
+ for (const issue of issues) {
+  const path=issue.path.join('.').replace('public_whatsapp','public_phone');
+  errors[path] ||= profileValidationMessages([issue])[0];
+ }
+ return errors;
+}

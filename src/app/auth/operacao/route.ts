@@ -22,7 +22,7 @@ export async function POST(request:Request){
  if(mode==='recover'){
  await client.auth.resetPasswordForEmail(email.data,{redirectTo:new URL('/auth/callback?next=/dashboard/seguranca',appUrl()).href});return go('/entrar?notice=sent');
  }
- const password=z.string().min(12).max(128).safeParse(form.get('password'));if(!password.success)return go(mode==='signup'?'/cadastro?notice=password':'/entrar?notice=error');
+ const password=z.string().min(mode==='signup'?8:1).max(128).safeParse(form.get('password'));if(!password.success)return go(mode==='signup'?'/cadastro?notice=password':'/entrar?notice=error');
  if(mode==='signup'){
  if(form.get('terms')!=='on')return go('/cadastro?notice=error');
  const accountType=z.enum(['provider','customer']).safeParse(form.get('account_type'));

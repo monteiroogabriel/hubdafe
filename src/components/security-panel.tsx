@@ -72,7 +72,7 @@ export function SecurityPanel() {
           event.preventDefault();
           void operation("password", { password: String(new FormData(event.currentTarget).get("password")) });
         }}>
-          <label className="field">Nova senha<input type="password" name="password" required minLength={12} maxLength={128} autoComplete="new-password" /></label>
+          <label className="field">Nova senha<input type="password" name="password" required minLength={8} maxLength={128} autoComplete="new-password" /></label>
           <button className="primary" disabled={busy}>Atualizar senha</button>
         </form>
       </section>

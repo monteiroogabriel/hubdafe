@@ -1,3 +1,21 @@
 import { requireAdmin } from "@/lib/security/auth";
-import { categoryAction } from "@/features/moderation/actions";
-export default async function Categories({searchParams}:{searchParams:Promise<{notice?:string}>}){const {client}=await requireAdmin();const {data}=await client.from('categories').select('*').order('sort_order');const {notice}=await searchParams;const entries=[{id:'',name:'',slug:'',description:'',is_active:true,sort_order:0},...(data||[])];return <div className="editor"><h1>Categorias</h1><p>A desativação remove a categoria dos filtros e impede novas associações. Os serviços já publicados são preservados.</p>{notice&&<p className="notice error">Verifique o nome e o slug. O slug deve ser único e usar letras minúsculas, números e hífens.</p>}{entries.map(c=><section key={c.id}><h2>{c.id?c.name:'Nova categoria'}</h2><form action={categoryAction}><input type="hidden" name="id" value={c.id}/><div className="form-grid"><label className="field">Nome<input name="name" defaultValue={c.name} required minLength={2} maxLength={80}/></label><label className="field">Slug<input name="slug" defaultValue={c.slug} required pattern="[a-z0-9]+(-[a-z0-9]+)*"/></label></div><label className="field">Descrição<textarea name="description" defaultValue={c.description} maxLength={500}/></label><label className="field">Ordem<input type="number" name="sort_order" defaultValue={c.sort_order}/></label><label className="check"><input type="checkbox" name="active" defaultChecked={c.is_active}/>Ativa</label><button className="primary">Salvar categoria</button></form></section>)}</div>}
+import { CategoryManager, type Category } from "./category-manager";
+
+export default async function Categories() {
+  const { client } = await requireAdmin();
+  const categories: Category[] = [];
+  const batchSize = 500;
+
+  for (let offset = 0; ; offset += batchSize) {
+    const { data, error } = await client.from("categories")
+      .select("id,name,slug,description,is_active,sort_order")
+      .order("sort_order").order("name").order("id")
+      .range(offset, offset + batchSize - 1);
+
+    if (error) throw new Error("CATEGORIES_UNAVAILABLE");
+    categories.push(...data);
+    if (data.length < batchSize) break;
+  }
+
+  return <CategoryManager categories={categories} />;
+}

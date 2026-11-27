@@ -25,15 +25,14 @@ export async function POST(request:Request){
  const password=z.string().min(mode==='signup'?8:1).max(128).safeParse(form.get('password'));if(!password.success)return go(mode==='signup'?'/cadastro?notice=password':'/entrar?notice=error');
  if(mode==='signup'){
  if(form.get('terms')!=='on')return go('/cadastro?notice=error');
- const accountType=z.enum(['provider','customer']).safeParse(form.get('account_type'));
  const name=z.string().trim().min(2).max(100).safeParse(form.get('name'));
  const rawPhone=z.string().trim().min(8).max(30).safeParse(form.get('phone'));
  const country=String(form.get('phone_country')||'');
  const validCountry=getCountries().includes(country as CountryCode);
  const parsedPhone=rawPhone.success?(rawPhone.data.startsWith('+')?parsePhoneNumberFromString(rawPhone.data):validCountry?parsePhoneNumberFromString(rawPhone.data,country as CountryCode):undefined):undefined;
  if(!rawPhone.success||!parsedPhone?.isValid())return go('/cadastro?notice=phone');
- if(!accountType.success||!name.success)return go('/cadastro?notice=error');
- const {error}=await client.auth.signUp({email:email.data,password:password.data,options:{data:{account_type:accountType.data,name:name.data,phone:parsedPhone.number},emailRedirectTo:new URL('/auth/callback',appUrl()).href}});
+ if(!name.success)return go('/cadastro?notice=error');
+ const {error}=await client.auth.signUp({email:email.data,password:password.data,options:{data:{account_type:'provider',name:name.data,phone:parsedPhone.number},emailRedirectTo:new URL('/auth/callback',appUrl()).href}});
  if(error){
  console.error('[auth] signup failed',{code:error.code,status:error.status});
  const notice=error.code==='email_address_invalid'?'email':error.status===429?'rate_limit':error.code==='weak_password'?'password':error.code==='unexpected_failure'?'service':'error';

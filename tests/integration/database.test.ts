@@ -21,7 +21,7 @@ beforeAll(async()=>{
   const sql=await readFile(`supabase/migrations/${file}`,'utf8');
   try{await db.exec(sql);}catch(error){const e=error as {position?:string;internalPosition?:string;internalQuery?:string;message:string};throw new Error(`${file}: ${e.message} at ${e.position||e.internalPosition}: ${e.internalQuery||sql.slice(Math.max(0,Number(e.position)-250),Number(e.position)+250)}`);}
  }
- await db.query("insert into auth.users(id,email_confirmed_at) values ($1,now()),($2,now()),($3,now())",[a,b,admin]);
+ await db.query("insert into auth.users(id,email_confirmed_at,raw_user_meta_data) values ($1,now(),jsonb_build_object('account_type','customer')),($2,now(),null),($3,now(),null)",[a,b,admin]);
  await db.query("insert into public.user_roles(user_id,role) values ($1,'administrator')",[admin]);
  await identity(admin,'authenticated','aal2');category=await rpc<string>('manage_category',[null,'Elétrica','eletrica','Serviços elétricos',true,0]);
 },60000);
@@ -38,13 +38,23 @@ describe('Database authorization and publication',()=>{
  it('rejects stale saves and missing explicit publication consent',async()=>{await identity(a);const draft=await rpc<string>('start_draft');await expect(rpc('save_revision',[draft,null,input(category)])).rejects.toThrow('STALE_REVISION');await expect(rpc('save_revision',[draft,9,input(category)])).rejects.toThrow('STALE_REVISION');await expect(rpc('submit_revision',[draft,null])).rejects.toThrow('INCOMPLETE_PROFILE');});
  it('prevents self-moderation even when a provider also has admin permission',async()=>{await db.exec('reset role');await db.query("insert into public.user_roles(user_id,role) values($1,'administrator')",[a]);await identity(a,'authenticated','aal2');await expect(rpc('set_suspension',[provider,true,'Tentativa própria'])).rejects.toThrow('SELF_MODERATION');await db.exec('reset role');await db.query("delete from public.user_roles where user_id=$1 and role='administrator'",[a]);});
  it('requires ownership and quota for upload reservations',async()=>{await identity(a);const asset=await rpc<{id:string;public_key:string}>('reserve_upload',['foto.jpg',1024,'image']);await expect(rpc('reserve_upload',['grande.pdf',4*1024*1024,'pdf'])).rejects.toThrow('FILE_LIMIT');await identity(b);expect((await db.query('select * from public.file_assets where id=$1',[asset.id])).rows).toHaveLength(0);await identity(null,'service_role');await expect(rpc('finalize_upload',[asset.id,b,1000,'image/webp','a'.repeat(64),true])).rejects.toThrow('FORBIDDEN');await rpc('finalize_upload',[asset.id,a,1000,'image/webp','a'.repeat(64),true]);expect(await rpc('resolve_file',[asset.public_key,null,'aal1'])).toBeNull();expect(await rpc('resolve_file',[asset.public_key,b,'aal1'])).toBeNull();expect(await rpc('resolve_file',[asset.public_key,a,'aal1'])).not.toBeNull();});
- it('quotes persist, are idempotent and are isolated',async()=>{await identity(null,'service_role');const key='20000000-0000-4000-8000-000000000001';const payload={name:'Maria Cliente',contact_method:'email',email:'maria@example.test',message:'Preciso de instalação elétrica',location:''};const ref=await rpc<string>('create_quote',[slug,null,payload,key,'a'.repeat(64)]);expect(await rpc('create_quote',[slug,null,payload,key,'a'.repeat(64)])).toBe(ref);await expect(rpc('create_quote',[slug,null,payload,key,'b'.repeat(64)])).rejects.toThrow('IDEMPOTENCY_CONFLICT');await identity(b);expect((await db.query('select * from public.quote_requests')).rows).toHaveLength(0);await identity(a);const quotes=await db.query<{id:string;message:string}>('select * from public.quote_requests');expect(quotes.rows).toHaveLength(1);await rpc('update_quote_status',[quotes.rows[0].id,'closed']);await expect(db.query("update public.quote_requests set message='tampered'")).rejects.toThrow(/permission denied/);});
- it('support access needs explicit capability and creates audit event',async()=>{await identity(admin,'authenticated','aal2');expect((await db.query('select * from public.quote_requests')).rows).toHaveLength(0);await expect(rpc('support_quote',['20000000-0000-4000-8000-000000000001','Investigar ocorrência de suporte'])).rejects.toThrow('FORBIDDEN');});
- it('suspension hides direct profile and prevents new requests',async()=>{await identity(admin,'authenticated','aal2');await rpc('set_suspension',[provider,true,'Revisão de segurança']);await identity(null,'anon');expect(await rpc('get_public_profile',[slug])).toBeNull();await identity(null,'service_role');await expect(rpc('create_quote',[slug,null,{name:'Maria',contact_method:'email',email:'m@example.test',message:'Orçamento para serviço'},'20000000-0000-4000-8000-000000000002','c'.repeat(64)])).rejects.toThrow('PROVIDER_UNAVAILABLE');});
- it('rate limits persist across calls',async()=>{await identity(null,'service_role');for(let n=0;n<3;n++)expect(await rpc('consume_quote_limit',['a'.repeat(64),'b'.repeat(64)])).toBe(true);expect(await rpc('consume_quote_limit',['a'.repeat(64),'b'.repeat(64)])).toBe(false);});
+ it("disables quote operations while keeping retention for historical records", async () => {
+  await db.exec("reset role");
+  await db.query(`insert into public.quote_requests
+    (provider_id, requester_name, preferred_contact_method, requester_email, message, notice_version, status, closed_at)
+    values ($1, 'Maria Cliente', 'email', 'maria@example.test', 'Preciso de uma instalação', 'legacy', 'closed', now() - interval '181 days')`, [provider]);
+  await identity(a);
+  await expect(db.query("select * from public.quote_requests")).rejects.toThrow(/permission denied/);
+  await identity(null, "service_role");
+  const key = "20000000-0000-4000-8000-000000000001";
+  await expect(rpc("create_quote", [slug, null, {}, key, "a".repeat(64)])).rejects.toThrow(/permission denied/);
+  await rpc("prepare_cleanup");
+  await db.exec("reset role");
+  expect((await db.query("select * from public.quote_requests")).rows).toHaveLength(0);
+ });
+ it('suspension hides direct profile',async()=>{await identity(admin,'authenticated','aal2');await rpc('set_suspension',[provider,true,'Revisão de segurança']);await identity(null,'anon');expect(await rpc('get_public_profile',[slug])).toBeNull();});
  it('revoking publication consent removes the profile',async()=>{await identity(admin,'authenticated','aal2');await rpc('set_suspension',[provider,false,'Verificação concluída']);await identity(a);await rpc('revoke_publication_consent');await expect(rpc('set_publication',[true])).rejects.toThrow('PUBLICATION_NOT_ALLOWED');await identity(null,'anon');expect(await rpc('get_public_profile',[slug])).toBeNull();});
- it('disabled accounts cannot use an otherwise valid identity',async()=>{await identity(a);await rpc('request_account_deletion');expect(await rpc('account_enabled')).toBe(false);expect((await db.query('select * from public.quote_requests')).rows).toHaveLength(0);await expect(rpc('start_draft')).rejects.toThrow('FORBIDDEN');});
- it('retention removes personal data without changing live requests',async()=>{await db.exec('reset role');await db.exec("update public.quote_requests set closed_at=now()-interval '181 days' where status='closed'");await identity(null,'service_role');await rpc('prepare_cleanup');await db.exec('reset role');expect((await db.query('select * from public.quote_requests')).rows).toHaveLength(0);});
+ it('disabled accounts cannot use an otherwise valid identity',async()=>{await identity(a);await rpc('request_account_deletion');expect(await rpc('account_enabled')).toBe(false);await expect(rpc('start_draft')).rejects.toThrow('FORBIDDEN');});
  it("grants administrator access only to active confirmed accounts and audits a single grant", async () => {
   await db.exec("reset role");
   const target = "10000000-0000-4000-8000-000000000004";
@@ -79,7 +89,6 @@ describe('Database authorization and publication',()=>{
   expect((await db.query("select granted_by from public.user_roles where role='administrator'")).rows).toEqual([{granted_by:admin}]);
   await identity(target,"authenticated","aal2");
   expect(await rpc("is_administrator")).toBe(true);
-  await expect(rpc("support_quote",["20000000-0000-4000-8000-000000000001","Verificar capacidade separada"])).rejects.toThrow("FORBIDDEN");
  });
 
  it("can provision the first administrator before authenticator enrollment", async () => {

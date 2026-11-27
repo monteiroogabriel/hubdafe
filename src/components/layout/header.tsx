@@ -20,14 +20,14 @@ export function Header() {
       <div className="container header-inner">
         <Brand />
         <nav className="desktop-nav" aria-label="Navegação principal">
-          <Link href="/profissionais">Diretório</Link>
+          <Link href="/profissionais">Encontrar serviços</Link>
           <Link href="/#proposito">Sobre o HUB</Link>
           <Link className="button secondary small" href="/entrar">Entrar</Link>
         </nav>
         <details className="mobile-nav" key={pathname}>
           <summary aria-label="Menu principal"><Menu size={22} aria-hidden="true" /></summary>
           <nav aria-label="Navegação principal">
-            <Link href="/profissionais">Diretório</Link>
+            <Link href="/profissionais">Encontrar serviços</Link>
             <Link href="/#proposito" onClick={event => event.currentTarget.closest("details")?.removeAttribute("open")}>Sobre o HUB</Link>
             <Link href="/entrar">Entrar</Link>
             <Link href="/cadastro">Criar conta</Link>
@@ -46,7 +46,7 @@ export function Footer() {
       <div className="container footer-grid">
         <div><Brand /><p>Rede de profissionais e empresas da comunidade.</p></div>
         <nav aria-label="Links institucionais">
-          <Link href="/profissionais">Diretório</Link>
+          <Link href="/profissionais">Encontrar serviços</Link>
           <Link href="/dashboard">Área do prestador</Link>
         </nav>
         <nav aria-label="Termos e privacidade">

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-export function SecurityPanel() {
+export function SecurityPanel({email}:{email:string}) {
   const [message, setMessage] = useState("");
   const [setupKey, setSetupKey] = useState("");
   const [factor, setFactor] = useState("");
@@ -68,17 +68,21 @@ export function SecurityPanel() {
       </section>
       <section>
         <h2>Alterar senha</h2>
+        <p>Escolha uma senha nova com pelo menos 8 caracteres. Use uma senha que você não usa em outros serviços.</p>
         <form onSubmit={event => {
           event.preventDefault();
-          void operation("password", { password: String(new FormData(event.currentTarget).get("password")) });
+          const form=new FormData(event.currentTarget);const password=String(form.get("password"));
+          if(password!==form.get("confirm")){setMessage("As senhas não são iguais. Confira os dois campos.");return;}
+          void operation("password", { password });
         }}>
           <label className="field">Nova senha<input type="password" name="password" required minLength={8} maxLength={128} autoComplete="new-password" /></label>
+          <label className="field">Confirme a nova senha<input type="password" name="confirm" required minLength={8} maxLength={128} autoComplete="new-password" /></label>
           <button className="primary" disabled={busy}>Atualizar senha</button>
         </form>
       </section>
       <section>
         <h2>Alterar e-mail de acesso</h2>
-        <p>O e-mail público do perfil permanece separado.</p>
+        <p>Seu e-mail atual é <strong>{email}</strong>. Após solicitar a troca, confirme o novo endereço pelo link enviado. O e-mail público do perfil permanece separado.</p>
         <form onSubmit={event => {
           event.preventDefault();
           void operation("email", { email: String(new FormData(event.currentTarget).get("email")) });
@@ -89,7 +93,7 @@ export function SecurityPanel() {
       </section>
       <section>
         <h2>Retirar autorização de publicação</h2>
-        <p>Seu perfil será retirado do diretório imediatamente. Sua conta e os orçamentos continuarão privados.</p>
+        <p>Seu perfil será retirado do diretório imediatamente. Os dados da sua conta continuarão privados.</p>
         <button className="button secondary" disabled={busy} onClick={() => {
           if (window.confirm("Retirar sua autorização e ocultar seu perfil?")) void operation("revoke");
         }}>Retirar autorização</button>

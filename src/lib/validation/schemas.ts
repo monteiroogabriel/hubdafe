@@ -19,14 +19,4 @@ export const profileSchema = z.object({
   })).max(20),
   documents: z.array(z.object({ asset_id: z.uuid(), kind: z.enum(["avatar", "logo", "presentation"]) })).max(3),
 });
-export const quoteSchema = z.object({
-  provider: z.string().min(1).max(100), service: z.union([z.uuid(), z.literal("")]),
-  name: z.string().trim().min(2).max(100), contact_method: z.enum(["email", "phone", "whatsapp"]),
-  email, phone, message: z.string().trim().min(10).max(3000), location: z.string().max(150),
-  acknowledged: z.literal(true), idempotency_key: z.uuid(),
-  company_website: z.literal("").default(""),
-}).superRefine((v, ctx) => {
-  if (v.contact_method === "email" && !v.email) ctx.addIssue({ code: "custom", path: ["email"], message: "Informe seu e-mail." });
-  if (v.contact_method !== "email" && !v.phone) ctx.addIssue({ code: "custom", path: ["phone"], message: "Informe seu telefone." });
-});
 export type ProfileInput = z.input<typeof profileSchema>;

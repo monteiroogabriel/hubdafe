@@ -1,7 +1,6 @@
-import { categories, directory } from "@/features/providers/queries";
-import { ProviderCard } from "@/components/provider-card";
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, ClipboardList, Globe2, UserRound } from "lucide-react";
+import { redirect } from "next/navigation";
+import { ArrowRight, ArrowUpRight, Globe2, UserRound } from "lucide-react";
 import { requireUser } from "@/lib/security/auth";
 import { publication } from "@/features/providers/actions";
 import { statusNames } from "@/types/domain";
@@ -9,9 +8,8 @@ import { statusNames } from "@/types/domain";
 export default async function Dashboard() {
   const { client, user } = await requireUser();
   const { data: roles } = await client.from("user_roles").select("role").eq("user_id",user.id);
-  if(roles?.some(role => role.role === "customer") && !roles.some(role => role.role === "provider")) {
-    const [topics,result] = await Promise.all([categories(),directory()]);
-    return <><div className="workspace-heading"><h1>Encontre um serviço</h1><p>Explore os profissionais da comunidade e fale com quem pode ajudar.</p></div><form action="/profissionais" className="home-search"><input name="q" placeholder="Qual serviço você procura?" aria-label="Serviço" maxLength={100}/><button className="primary">Buscar</button></form><div className="category-list" style={{marginBlock:24}}>{topics.map(topic=><Link className="category-link" key={topic.slug} href={`/profissionais?categoria=${topic.slug}`}>{topic.name}</Link>)}</div>{result.unavailable?<p className="notice">Diretório indisponível no momento. Tente novamente mais tarde.</p>:result.items.length?<div className="grid">{result.items.map(profile=><ProviderCard key={profile.slug} profile={profile}/>)}</div>:<div className="empty"><h2>Em breve, novos profissionais</h2><p>Os perfis aparecem aqui depois da aprovação da liderança.</p></div>}</>;
+  if (!roles?.some(role => role.role === "provider")) {
+    redirect(roles?.some(role => role.role === "administrator") ? "/admin" : "/profissionais");
   }
   const { data: profile } = await client.from("provider_profiles")
     .select("id, status, published_revision_id, slug, is_active")
@@ -28,7 +26,7 @@ export default async function Dashboard() {
     <>
       <div className="workspace-heading">
         <h1>Meu painel</h1>
-        <p>Acompanhe seu perfil, sua publicação e os pedidos que você receber.</p>
+        <p>Acompanhe seu perfil e sua publicação.</p>
       </div>
       <div className="dashboard-overview">
         <section className="dashboard-tile dashboard-profile">
@@ -44,12 +42,6 @@ export default async function Dashboard() {
             {profile ? "Editar perfil" : "Criar meu perfil"} <ArrowRight size={17} aria-hidden="true" />
           </Link>
         </section>
-
-        <Link className="dashboard-tile dashboard-tile-link" href="/dashboard/orcamentos">
-          <span className="tile-icon"><ClipboardList size={22} aria-hidden="true" /></span>
-          <div><h2>Orçamentos</h2><p>Veja os pedidos que chegaram pelo seu perfil.</p></div>
-          <ArrowUpRight size={19} aria-hidden="true" />
-        </Link>
 
         <section className="dashboard-tile dashboard-visibility">
           <span className="tile-icon"><Globe2 size={22} aria-hidden="true" /></span>

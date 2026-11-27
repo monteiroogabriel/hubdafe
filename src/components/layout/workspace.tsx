@@ -2,13 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowUpRight, ClipboardList, FolderOpen, LayoutGrid, LogOut, ShieldCheck, Tags, UserCog, UserRound, Users } from "lucide-react";
+import { ArrowUpRight, FolderOpen, LayoutGrid, LogOut, ShieldCheck, Tags, UserCog, UserRound, Users } from "lucide-react";
 import { Brand } from "./brand";
 
 const memberLinks = [
   { href: "/dashboard", title: "Painel", icon: LayoutGrid },
   { href: "/dashboard/perfil", title: "Meu perfil", icon: UserRound },
-  { href: "/dashboard/orcamentos", title: "Orçamentos", icon: ClipboardList },
   { href: "/dashboard/seguranca", title: "Minha conta", icon: ShieldCheck },
 ];
 
@@ -16,13 +15,12 @@ const adminLinks = [
   { href: "/admin", title: "Perfis", icon: Users },
   { href: "/admin/categorias", title: "Categorias", icon: Tags },
   { href: "/admin/auditoria", title: "Auditoria", icon: FolderOpen },
-  { href: "/admin/orcamentos", title: "Orçamentos", icon: ClipboardList },
   { href: "/admin/administradores", title: "Administradores", mobileTitle: "Admins", icon: UserCog },
 ];
 
-export function Workspace({ children, admin = false, canAdmin = false, customer = false }: {
+export function Workspace({ children, admin = false, canAdmin = false, canProvide = true }: {
   children: React.ReactNode;
-  customer?: boolean;
+  canProvide?: boolean;
   admin?: boolean;
   canAdmin?: boolean;
 }) {
@@ -33,7 +31,7 @@ export function Workspace({ children, admin = false, canAdmin = false, customer 
       <header className="workspace-header">
         <Brand href="/dashboard" />
         <div className="workspace-header-actions">
-          {admin ? <Link className="workspace-switch" href="/dashboard">Área da conta <ArrowUpRight size={16} /></Link> :
+          {admin ? <Link className="workspace-switch" href={canProvide ? "/dashboard" : "/dashboard/seguranca"}>Área da conta <ArrowUpRight size={16} /></Link> :
             canAdmin && <Link className="workspace-switch" href="/admin">Administração <ArrowUpRight size={16} /></Link>}
           <form action="/auth/operacao" method="post">
             <input type="hidden" name="mode" value="logout" />
@@ -42,8 +40,7 @@ export function Workspace({ children, admin = false, canAdmin = false, customer 
         </div>
       </header>
       <nav className={admin ? "workspace-nav workspace-nav-admin" : "workspace-nav"} aria-label={admin ? "Navegação administrativa" : "Navegação da conta"}>
-        {(admin ? adminLinks : customer ? [
-          { href: "/dashboard", title: "Explorar", icon: LayoutGrid },
+        {(admin ? adminLinks : !canProvide ? [
           { href: "/profissionais", title: "Serviços", icon: Users },
           { href: "/dashboard/seguranca", title: "Minha conta", icon: ShieldCheck },
         ] : memberLinks).map(({ href, title, icon: Icon, ...item }, index) => {

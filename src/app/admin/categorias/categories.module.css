@@ -1,0 +1,284 @@
+.page {
+  max-width: 760px;
+}
+
+.header,
+.toolbar,
+.footer,
+.dialogHeader,
+.dialogFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.header {
+  margin-bottom: 18px;
+}
+
+.header h1 {
+  margin: 0 0 4px;
+  font-size: clamp(1.75rem, 5vw, 2.4rem);
+  font-weight: 700;
+}
+
+.header p {
+  margin: 0;
+  font-size: .9rem;
+}
+
+.header button {
+  flex-shrink: 0;
+}
+
+.panel,
+.dialog {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface, #fff);
+}
+
+.toolbar {
+  padding: 10px;
+}
+
+.search {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.search svg {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.search input {
+  min-height: 42px;
+  padding: 6px 10px 6px 36px;
+  background: var(--frame, #f5f6f3);
+  border-color: var(--line);
+}
+
+.toggle,
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  font-size: .82rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.toggle[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
+.toggle:hover,
+.iconButton:hover:not(:disabled) {
+  background: var(--surface-muted, #edf2ed);
+}
+
+.iconButton {
+  min-width: 44px;
+  padding: 0;
+}
+
+.iconButton:disabled {
+  cursor: default;
+  opacity: .35;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  padding: 0 10px 0 14px;
+  border-top: 1px solid var(--line);
+}
+
+.row strong {
+  padding-block: 6px;
+  font-size: .9rem;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.rowActions {
+  display: flex;
+}
+
+.rowActions button[aria-label^="Excluir"] {
+  color: #8d3934;
+}
+
+.active,
+.inactive {
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: .72rem;
+  line-height: 1.5;
+  font-weight: 650;
+}
+
+.active {
+  color: #306143;
+  background: #edf4ee;
+}
+
+.inactive {
+  color: var(--muted);
+  background: #eef0f0;
+}
+
+.footer {
+  min-height: 42px;
+  padding: 0 10px 0 14px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: .8rem;
+}
+
+.empty,
+.notice {
+  margin: 0;
+  padding: 12px 14px;
+  font-size: .88rem;
+}
+
+.empty {
+  border-top: 1px solid var(--line);
+}
+
+.notice {
+  margin-bottom: 10px;
+  border-radius: 8px;
+  color: #306143;
+  background: #edf4ee;
+}
+
+.dialog {
+  position: fixed;
+  inset: 0;
+  width: min(480px, calc(100% - 24px));
+  max-height: calc(100dvh - 24px);
+  margin: auto;
+  padding: 0;
+  overflow: auto;
+  color: var(--ink);
+  box-shadow: 0 20px 70px #122f3633;
+}
+
+.dialog::backdrop {
+  background: #122f366b;
+}
+
+.dialogHeader,
+.dialogFooter {
+  position: sticky;
+  z-index: 1;
+  padding: 8px 16px;
+  background: var(--surface, #fff);
+}
+
+.dialogHeader {
+  top: 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.dialogHeader h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.dialogBody {
+  min-width: 0;
+  margin: 0;
+  padding: 14px 16px;
+  border: 0;
+}
+
+.dialogBody :global(.field) {
+  margin-bottom: 10px;
+}
+
+.dialogBody :global(.notice),
+.dialogBody > p {
+  margin: 0;
+}
+
+.dialogBody textarea {
+  min-height: 64px;
+}
+
+.hint {
+  color: var(--muted);
+  font-size: .76rem;
+  font-weight: 400;
+  overflow-wrap: anywhere;
+}
+
+.settings,
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.settings {
+  flex-wrap: wrap;
+  gap: 10px 20px;
+}
+
+.settings :global(.field) {
+  width: 10rem;
+  margin-bottom: 0;
+}
+
+.checkbox {
+  min-height: 44px;
+  font-size: .88rem;
+}
+
+.dialogFooter {
+  bottom: 0;
+  justify-content: flex-end;
+  border-top: 1px solid var(--line);
+}
+
+@media (max-width: 540px) {
+  .header {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .toolbar {
+    gap: 4px;
+  }
+
+  .row {
+    gap: 4px;
+    padding-inline: 10px 4px;
+  }
+}

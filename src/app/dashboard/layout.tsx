@@ -8,7 +8,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const { client, user } = await requireUser();
   const { data: roles } = await client.from("user_roles").select("role").eq("user_id", user.id);
   const canAdmin = roles?.some(role => role.role === "administrator");
-  const customer = roles?.some(role => role.role === "customer") && !roles.some(role => role.role === "provider");
+  const canProvide = roles?.some(role => role.role === "provider");
 
-  return <Workspace customer={Boolean(customer)} canAdmin={canAdmin === true}>{children}</Workspace>;
+  return <Workspace canProvide={canProvide === true} canAdmin={canAdmin === true}>{children}</Workspace>;
 }

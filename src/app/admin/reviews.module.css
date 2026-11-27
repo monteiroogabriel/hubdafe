@@ -1,0 +1,108 @@
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr));
+  gap: 8px;
+  margin: 0 0 16px;
+}
+
+.metrics > div {
+  display: grid;
+  align-content: start;
+  gap: 2px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.metrics dt {
+  color: var(--muted);
+  font-size: .82rem;
+}
+
+.metrics dd {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.filters {
+  max-width: 420px;
+  margin-bottom: 16px;
+}
+
+.filters select {
+  font-size: 1rem;
+}
+
+.list {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.list li + li {
+  border-top: 1px solid var(--line);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 64px;
+  padding: 10px 12px;
+  border-radius: 10px;
+}
+
+.row:hover {
+  background: var(--surface-muted);
+  text-decoration: none;
+}
+
+.row:focus-visible {
+  outline-offset: -3px;
+}
+
+.profile {
+  min-width: 0;
+}
+
+.profile h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.states {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  align-items: center;
+  margin-top: 4px;
+  font-size: .82rem;
+}
+
+.states :global(.badge) {
+  padding: 1px 8px;
+}
+
+.pending {
+  color: #73592e;
+}
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  font-size: .85rem;
+  font-weight: 700;
+  color: var(--navy);
+}

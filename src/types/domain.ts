@@ -8,5 +8,4 @@ export type PublicProfile = {
  documents: { kind: string; key: string }[];
  services: { key: string; title: string; description: string; category: string; category_slug: string; photos: { key: string; alt: string }[] }[];
 };
-export type Quote = { id: string; reference: string; requester_name: string; requester_email: string | null; requester_phone: string | null; preferred_contact_method: string; message: string; service_location: string; status: string; created_at: string };
 export const statusNames: Record<string, string> = { draft: "Rascunho", pending_review: "Em revisão", approved: "Aprovado", rejected: "Revisar informações", suspended: "Suspenso", new: "Novo", viewed: "Visualizado", in_progress: "Em atendimento", closed: "Encerrado", spam: "Spam" };

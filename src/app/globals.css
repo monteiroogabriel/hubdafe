@@ -179,3 +179,4 @@ body:has(dialog[open]) { overflow:hidden; }
 @media(max-width:380px) { .phone-entry { grid-template-columns:minmax(0, 1fr) minmax(0, 1.15fr); gap:6px; } .phone-entry select { font-size:.8rem; padding-inline:6px; } }
 
 .field-error{display:block;color:#982c20;font-size:.85rem;font-weight:500;line-height:1.5;margin-top:6px}input[aria-invalid=true],textarea[aria-invalid=true],select[aria-invalid=true]{border-color:#b53324;background:#fff9f7}
+.page-loading{display:grid;gap:14px;max-width:560px}.page-loading i{display:block;height:22px;border-radius:8px;background:linear-gradient(90deg,#e8ede8 25%,#f4f6f3 40%,#e8ede8 65%);background-size:400% 100%;animation:page-shimmer 1.2s ease infinite}.page-loading i:nth-child(2){width:78%}.page-loading i:nth-child(3){width:55%}@keyframes page-shimmer{0%{background-position:100% 0}100%{background-position:0 0}}@media(prefers-reduced-motion:reduce){.page-loading i{animation:none}}

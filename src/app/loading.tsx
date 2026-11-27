@@ -1,1 +1,1 @@
-export default function Loading(){return <div className="container page" role="status" aria-live="polite"><p>Carregando…</p></div>}
+export default function Loading(){return <div className="container page" role="status" aria-live="polite" aria-busy="true"><p>Carregando página…</p><div className="page-loading" aria-hidden="true"><i/><i/><i/></div></div>}
